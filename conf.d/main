@@ -57,6 +57,10 @@ $CURL ${URL}/home/successfullyinstalled?flush=1
 rm -f /tmp/cookie
 rm -f $WEBROOT/install.php
 
+# set site name
+$MYSQL_BATCH --execute "UPDATE $DB_NAME.SiteConfig SET Title=\"TurnKey SilverStripe\" WHERE ClassName=\"SiteConfig\";"
+$MYSQL_BATCH --execute "UPDATE $DB_NAME.SiteConfig SET Tagline=NULL WHERE ClassName=\"SiteConfig\";"
+
 # stop services
 /etc/init.d/mysql stop
 /etc/init.d/apache2 stop
