@@ -28,3 +28,8 @@ sed -i "s|^;date.timezone.*|date.timezone = \"UTC\"|" $PHPINI
 CONF=$WEBROOT/themes/blackcandy/templates/Includes/Footer.ss
 sed -i "s|Copyright.*|<a href='http://www.turnkeylinux.org/silverstripe'>SilverStripe Appliance</a> - Powered by <a href='http://www.turnkeylinux.org'>TurnKey Linux</a></p>|" $CONF
 
+# configure apache
+a2dissite default
+a2ensite silverstripe
+a2enmod rewrite
+
