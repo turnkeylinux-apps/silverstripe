@@ -35,6 +35,7 @@ a2enmod rewrite
 
 # start services
 /etc/init.d/mysql start
+/etc/init.d/apache2 start
 
 # setup the database
 MYSQL_BATCH="mysql --user=root --password=$MYSQL_PASS --batch"
@@ -43,6 +44,20 @@ MYSQL_ADMIN="mysqladmin --user=root --password=$MYSQL_PASS"
 $MYSQL_ADMIN create $DB_NAME
 $MYSQL_BATCH --execute "grant all privileges on $DB_NAME.* to $DB_USER@localhost identified by '$DB_PASS'; flush privileges;"
 
+# curl based install
+EMAIL=$(echo $ADMIN_MAIL | sed s/@/%40/)
+URL="http://127.0.0.1"
+CURL="curl -c /tmp/cookie -b /tmp/cookie"
+
+$CURL ${URL}/install.php --data "db%5Btype%5D=MySQLDatabase&db%5BMySQLDatabase%5D%5Bserver%5D=localhost&db%5BMySQLDatabase%5D%5Busername%5D=$DB_USER&db%5BMySQLDatabase%5D%5Bpassword%5D=$DB_PASS&db%5BMySQLDatabase%5D%5Bdatabase%5D=$DB_NAME&db%5BMSSQLDatabase%5D%5Bserver%5D=localhost&db%5BMSSQLDatabase%5D%5Busername%5D=root&db%5BMSSQLDatabase%5D%5Bpassword%5D=&db%5BMSSQLDatabase%5D%5Bdatabase%5D=SS_mysite&db%5BPostgreSQLDatabase%5D%5Bserver%5D=localhost&db%5BPostgreSQLDatabase%5D%5Busername%5D=root&db%5BPostgreSQLDatabase%5D%5Bpassword%5D=&db%5BPostgreSQLDatabase%5D%5Bdatabase%5D=SS_mysite&db%5BSQLiteDatabase%5D%5Bpath%5D=%2Fvar%2Fwww%2Fsilverstripe%2Fassets%2F.db&db%5BSQLiteDatabase%5D%5Bdatabase%5D=SS_mysite&admin%5Busername%5D=$EMAIL&admin%5Bpassword%5D=$ADMIN_PASS&locale=en_US&template=blackcandy&go=Installing+SilverStripe..."
+
+$CURL ${URL}/InstallerTest/testrewrite
+$CURL ${URL}/home/successfullyinstalled?flush=1
+
+rm -f /tmp/cookie
+rm -f $WEBROOT/install.php
+
 # stop services
 /etc/init.d/mysql stop
+/etc/init.d/apache2 stop
 
