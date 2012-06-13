@@ -61,6 +61,9 @@ rm -f $WEBROOT/install.php
 $MYSQL_BATCH --execute "UPDATE $DB_NAME.SiteConfig SET Title=\"TurnKey SilverStripe\" WHERE ClassName=\"SiteConfig\";"
 $MYSQL_BATCH --execute "UPDATE $DB_NAME.SiteConfig SET Tagline=NULL WHERE ClassName=\"SiteConfig\";"
 
+# chmod sensitive files
+chmod 640 $WEBROOT/mysite/_config.php
+
 # stop services
 /etc/init.d/mysql stop
 /etc/init.d/apache2 stop
