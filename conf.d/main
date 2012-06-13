@@ -24,3 +24,7 @@ PHPINI=/etc/php5/apache2/php.ini
 sed -i "s|^memory_limit.*|memory_limit = 48M|" $PHPINI
 sed -i "s|^;date.timezone.*|date.timezone = \"UTC\"|" $PHPINI
 
+# tweak footer
+CONF=$WEBROOT/themes/blackcandy/templates/Includes/Footer.ss
+sed -i "s|Copyright.*|<a href='http://www.turnkeylinux.org/silverstripe'>SilverStripe Appliance</a> - Powered by <a href='http://www.turnkeylinux.org'>TurnKey Linux</a></p>|" $CONF
+
