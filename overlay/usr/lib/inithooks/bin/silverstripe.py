@@ -10,7 +10,7 @@ Option:
 import os
 import sys
 import getopt
-import hashlib
+import bcrypt
 
 from dialog_wrapper import Dialog
 from mysqlconf import MySQL
@@ -54,16 +54,20 @@ def main():
             "Enter email address for the SilverStripe 'admin' account.",
             "admin@example.com")
 
-    salt = os.urandom(20).encode('hex')
-    hash = hashlib.sha1(password + salt).hexdigest()
+    salt = bcrypt.gensalt(10)
+    hash = bcrypt.hashpw(password, salt)
+
+    # munge the salt and hash, argh!
+    _salt = salt[4:]
+    _hash = "$2y$" + hash[4:]
 
     m = MySQL()
-    m.execute('UPDATE silverstripe.Member SET Salt=\"%s\" WHERE ID=1;' % salt)
-    m.execute('UPDATE silverstripe.Member SET Password=\"%s\" WHERE ID=1;' % hash)
+    m.execute('UPDATE silverstripe.Member SET Salt=\"%s\" WHERE ID=1;' % _salt)
+    m.execute('UPDATE silverstripe.Member SET Password=\"%s\" WHERE ID=1;' % _hash)
     m.execute('UPDATE silverstripe.Member SET Email=\"%s\" WHERE ID=1;' % email)
 
-    m.execute('UPDATE silverstripe.MemberPassword SET Salt=\"%s\" WHERE ID=1;' % salt)
-    m.execute('UPDATE silverstripe.MemberPassword SET Password=\"%s\" WHERE ID=1;' % hash)
+    m.execute('UPDATE silverstripe.MemberPassword SET Salt=\"%s\" WHERE ID=1;' % _salt)
+    m.execute('UPDATE silverstripe.MemberPassword SET Password=\"%s\" WHERE ID=1;' % _hash)
 
 
 if __name__ == "__main__":
