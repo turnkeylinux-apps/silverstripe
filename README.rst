@@ -25,7 +25,7 @@ Credentials *(passwords set at first boot)*
 -------------------------------------------
 
 -  Webmin, SSH, MySQL, phpMyAdmin: username **root**
--  SilverStripe: username **admin@example.com**
+-  SilverStripe: username is email set on first boot
 
 
 .. _SilverStripe: http://www.silverstripe.org
