@@ -10,6 +10,9 @@ ADMIN_MAIL=admin@example.com
 SRC=/usr/local/src
 WEBROOT=/var/www/silverstripe
 
+# install py-bcrypt (required in inithooks)
+pip install py-bcrypt
+
 # unpack and set required permissions
 tar -zxf $SRC/SilverStripe-*.tar.gz -C $(dirname $WEBROOT)
 mv $(dirname $WEBROOT)/SilverStripe-* $WEBROOT

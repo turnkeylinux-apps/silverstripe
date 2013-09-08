@@ -5,5 +5,7 @@ php5-gd
 php5-cli
 php5-curl
 
-python-bcrypt
-
+python-pip
+python-dev
+libc6-dev
+gcc
