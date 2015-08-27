@@ -10,6 +10,7 @@ Option:
 import os
 import sys
 import getopt
+import inithooks_cache
 import bcrypt
 
 from dialog_wrapper import Dialog
@@ -53,6 +54,8 @@ def main():
             "SilverStripe Email",
             "Enter email address for the SilverStripe 'admin' account.",
             "admin@example.com")
+
+    inithooks_cache.write('APP_EMAIL', email)
 
     salt = bcrypt.gensalt(10)
     hash = bcrypt.hashpw(password, salt)
