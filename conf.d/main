@@ -26,7 +26,7 @@ sed -i "s|^;date.timezone.*|date.timezone = \"UTC\"|" $PHPINI
 
 # tweak footer
 CONF=$WEBROOT/themes/simple/templates/Includes/Footer.ss
-sed -i "s|</footer>|<center><a href='http://www.turnkeylinux.org/silverstripe'>SilverStripe Appliance</a> - Powered by <a href='http://www.turnkeylinux.org'>TurnKey Linux</a></center></footer>|" $CONF
+sed -i "s|</footer>|<center><a href='https://www.turnkeylinux.org/silverstripe'>SilverStripe Appliance</a> - Powered by <a href='https://www.turnkeylinux.org'>TurnKey Linux</a></center></footer>|" $CONF
 
 # configure apache
 a2dissite 000-default
