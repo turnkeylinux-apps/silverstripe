@@ -5,8 +5,8 @@ dl() {
     cd $2; curl -L -f -O $PROXY $1; cd -
 }
 
-VERSION="3.1.12"
-URL="http://www.silverstripe.org/assets/releases/SilverStripe-cms-v${VERSION}.tar.gz"
+VERSION="3.5.3"
+URL="https://silverstripe-ssorg-releases.s3.amazonaws.com/sssites-ssorg-prod/assets/releases/SilverStripe-cms-v${VERSION}.tar.gz"
 
 dl $URL /usr/local/src
 
