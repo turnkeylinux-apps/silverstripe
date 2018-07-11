@@ -14,6 +14,10 @@ and on top of that:
    
    - Installed from upstream source code to /var/www/silverstripe
 
+    **Security note**: Updates to SilverStripe may require supervision so
+    they **ARE NOT** configured to install automatically. See `SilverStripe
+    documentation`_ for upgrading.
+
 - SSL support out of the box.
 - `Adminer`_ administration frontend for MySQL (listening on port
   12322 - uses SSL).
@@ -31,4 +35,5 @@ Credentials *(passwords set at first boot)*
 
 .. _SilverStripe: http://www.silverstripe.org
 .. _TurnKey Core: https://www.turnkeylinux.org/core
+.. _SilverStripe documentation: https://docs.silverstripe.org/en/4/upgrading/
 .. _Adminer: http://www.adminer.org/
