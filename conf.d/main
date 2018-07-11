@@ -14,13 +14,10 @@ WEBROOT=/var/www/silverstripe
 mkdir $WEBROOT
 tar -zxf $SRC/SilverStripe-*.tar.gz -C $WEBROOT
 rm -f $SRC/SilverStripe-*.tar.gz
-chown -R root:root $WEBROOT
-chown -R www-data:www-data $WEBROOT/assets
-chown www-data:www-data $WEBROOT/.htaccess
-chown www-data:www-data $WEBROOT/mysite/_config.php
-chown www-data:www-data $WEBROOT/index.php
-#chown www-data:www-data $WEBROOT/.env
-chown www-data:www-data $WEBROOT/mysite/_config/theme.yml
+
+touch $WEBROOT/.env
+chown -R www-data:www-data $WEBROOT
+
 
 # tweak php.ini
 PHPINI=/etc/php/7.0/apache2/php.ini
@@ -52,17 +49,29 @@ EMAIL=$(echo $ADMIN_MAIL | sed s/@/%40/)
 URL="http://127.0.0.1"
 CURL="curl -c /tmp/cookie -b /tmp/cookie"
 
-$CURL ${URL}/install.php --data "db%5Btype%5D=MySQLDatabase&db%5BMySQLDatabase%5D%5Bserver%5D=localhost&db%5BMySQLDatabase%5D%5Busername%5D=$DB_USER&db%5BMySQLDatabase%5D%5Bpassword%5D=$DB_PASS&db%5BMySQLDatabase%5D%5Bdatabase%5D=$DB_NAME&db%5BMSSQLDatabase%5D%5Bserver%5D=localhost&db%5BMSSQLDatabase%5D%5Busername%5D=root&db%5BMSSQLDatabase%5D%5Bpassword%5D=&db%5BMSSQLDatabase%5D%5Bdatabase%5D=SS_mysite&db%5BPostgreSQLDatabase%5D%5Bserver%5D=localhost&db%5BPostgreSQLDatabase%5D%5Busername%5D=root&db%5BPostgreSQLDatabase%5D%5Bpassword%5D=&db%5BPostgreSQLDatabase%5D%5Bdatabase%5D=SS_mysite&db%5BSQLiteDatabase%5D%5Bpath%5D=%2Fvar%2Fwww%2Fsilverstripe%2Fassets%2F.db&db%5BSQLiteDatabase%5D%5Bdatabase%5D=SS_mysite&admin%5Busername%5D=$EMAIL&admin%5Bpassword%5D=$ADMIN_PASS&locale=en_US&template=simple&go=Installing+SilverStripe..."
+$CURL ${URL}/install.php
+$CURL ${URL}/install.php --data "db%5BMySQLPDODatabase%5D%5Bserver%5D=localhost&db%5BMySQLPDODatabase%5D%5Busername%5D=${DB_USER}&db%5BMySQLPDODatabase%5D%5Bpassword%5D=${DB_PASS}&db%5BMySQLPDODatabase%5D%5Bdatabase%5D=${DB_NAME}&db%5Btype%5D=MySQLPDODatabase&db%5BMySQLDatabase%5D%5Bserver%5D=localhost&db%5BMySQLDatabase%5D%5Busername%5D=o&db%5BMySQLDatabase%5D%5Bpassword%5D=p&db%5BMySQLDatabase%5D%5Bdatabase%5D=SS_mysite&useEnv=off&admin%5Busername%5D=${ADMIN_MAIL}&admin%5Bpassword%5D=${ADMIN_PASS}&locale=en_US&template=simple&reinstall=Installing+Silverstripe..." > /tmp/install_page
+
+token=$(sed -rn '\|"//home/successfullyinstalled| s|.*//home/successfullyinstalled\?flushtoken=([a-f0-9]+)">.*|\1|p' /tmp/install_page)
 
 $CURL ${URL}/InstallerTest/testrewrite
-$CURL ${URL}/home/successfullyinstalled?flush=1
+$CURL ${URL}/home/successfullyinstalled?flushtoken=$token
 
-rm -f /tmp/cookie
+rm -f /tmp/cookie /tmp/install_page
 rm -f $WEBROOT/install.php
 
 # set site name
-$MYSQL_BATCH --execute "UPDATE $DB_NAME.SiteConfig SET Title=\"TurnKey SilverStripe\" WHERE ClassName=\"SiteConfig\";"
-$MYSQL_BATCH --execute "UPDATE $DB_NAME.SiteConfig SET Tagline=NULL WHERE ClassName=\"SiteConfig\";"
+#$MYSQL_BATCH --execute "UPDATE $DB_NAME.SiteConfig SET Title=\"TurnKey SilverStripe\" WHERE ClassName=\"SiteConfig\";"
+#$MYSQL_BATCH --execute "UPDATE $DB_NAME.SiteConfig SET Tagline=NULL WHERE ClassName=\"SiteConfig\";"
+
+# chown sensitive files
+chown -R root:root $WEBROOT
+chown -R www-data:www-data $WEBROOT/public/assets
+chown www-data:www-data $WEBROOT/public/.htaccess
+chown www-data:www-data $WEBROOT/mysite/_config.php
+chown www-data:www-data $WEBROOT/public/index.php
+chown www-data:www-data $WEBROOT/.env
+chown www-data:www-data $WEBROOT/mysite/_config/theme.yml
 
 # chmod sensitive files
 chmod 640 $WEBROOT/mysite/_config.php
