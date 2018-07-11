@@ -1,5 +1,7 @@
 turnkey-silverstripe-15.0 (1) turnkey; urgency=low
 
+  * Install latest stable SilverStripe from upstream (v4.1.1).
+
   * Install Adminer directly from stretch/main repo
 
   * Provide "adminer" root-like user for Adminer MySQL access
