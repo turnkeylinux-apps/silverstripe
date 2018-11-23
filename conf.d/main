@@ -68,13 +68,13 @@ rm -f $WEBROOT/install.php
 chown -R root:root $WEBROOT
 chown -R www-data:www-data $WEBROOT/public/assets
 chown www-data:www-data $WEBROOT/public/.htaccess
-chown www-data:www-data $WEBROOT/mysite/_config.php
+chown www-data:www-data $WEBROOT/app/_config.php
 chown www-data:www-data $WEBROOT/public/index.php
 chown www-data:www-data $WEBROOT/.env
-chown www-data:www-data $WEBROOT/mysite/_config/theme.yml
+chown www-data:www-data $WEBROOT/app/_config/theme.yml
 
 # chmod sensitive files
-chmod 640 $WEBROOT/mysite/_config.php
+chmod 640 $WEBROOT/app/_config.php
 
 # stop services
 service mysql stop
