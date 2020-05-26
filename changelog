@@ -1,3 +1,12 @@
+turnkey-silverstripe-16.0 (1) turnkey; urgency=low
+
+  * Install latest stable SilverStripe from upstream (v4.5.2).
+
+  * Note: Please refer to turnkey-core's changelog for changes common to all
+    appliances. Here we only describe changes specific to this appliance.
+
+ -- Stefan Davis <stefan@turnkeylinux.org>  Wed, 27 May 2020 09:37:48 +1000
+
 turnkey-silverstripe-15.1 (1) turnkey; urgency=low
 
   * Install latest stable SilverStripe from upstream (v4.2.2).
