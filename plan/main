@@ -4,9 +4,8 @@
 php-gd
 php-cli
 php-curl
-php-mcrypt
 php-mbstring
 php-xml
 php-intl
 
-python-bcrypt
+python3-bcrypt
