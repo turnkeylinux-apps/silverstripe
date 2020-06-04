@@ -10,17 +10,23 @@ ADMIN_MAIL=admin@example.com
 SRC=/usr/local/src
 WEBROOT=/var/www/silverstripe
 
-# unpack and set required permissions
-mkdir $WEBROOT
-tar -zxf $SRC/SilverStripe-*.tar.gz -C $WEBROOT
-rm -f $SRC/SilverStripe-*.tar.gz
+VERSION=4.5.2
 
-touch $WEBROOT/.env
+# unpack and set required permissions
+cd /var/www
+composer create-project silverstripe/installer silverstripe
+
+cp $WEBROOT/.env.example $WEBROOT/.env
+ENV=$WEBROOT/.env
+sed -i "s/^\(SS_DATABASE_USERNAME=\).*$/\1\"$DB_USER\"/" $ENV
+sed -i "s/^\(SS_DATABASE_PASSWORD=\).*$/\1\"$DB_PASS\"/" $ENV
+sed -i "s/^\(SS_DATABASE_NAME=\).*$/\1\"$DB_NAME\"/" $ENV
+echo "SS_DEFAULT_ADMIN_USERNAME=\"admin\"" >> $ENV
+echo "SS_DEFAULT_ADMIN_PASSWORD=\"$ADMIN_PASS\"" >> $ENV
 chown -R www-data:www-data $WEBROOT
 
-
 # tweak php.ini
-PHPINI=/etc/php/7.0/apache2/php.ini
+PHPINI=/etc/php/7.3/apache2/php.ini
 sed -i "s|^memory_limit.*|memory_limit = 128M|" $PHPINI
 sed -i "s|^;date.timezone.*|date.timezone = \"UTC\"|" $PHPINI
 
@@ -44,21 +50,8 @@ MYSQL_ADMIN="mysqladmin --user=root --password=$MYSQL_PASS"
 $MYSQL_ADMIN create $DB_NAME
 $MYSQL_BATCH --execute "grant all privileges on $DB_NAME.* to $DB_USER@localhost identified by '$DB_PASS'; flush privileges;"
 
-# curl based install
-EMAIL=$(echo $ADMIN_MAIL | sed s/@/%40/)
-URL="http://127.0.0.1"
-CURL="curl -c /tmp/cookie -b /tmp/cookie"
-
-$CURL ${URL}/install.php
-$CURL ${URL}/install.php --data "db%5BMySQLPDODatabase%5D%5Bserver%5D=localhost&db%5BMySQLPDODatabase%5D%5Busername%5D=${DB_USER}&db%5BMySQLPDODatabase%5D%5Bpassword%5D=${DB_PASS}&db%5BMySQLPDODatabase%5D%5Bdatabase%5D=${DB_NAME}&db%5Btype%5D=MySQLPDODatabase&db%5BMySQLDatabase%5D%5Bserver%5D=localhost&db%5BMySQLDatabase%5D%5Busername%5D=o&db%5BMySQLDatabase%5D%5Bpassword%5D=p&db%5BMySQLDatabase%5D%5Bdatabase%5D=SS_mysite&useEnv=off&admin%5Busername%5D=${ADMIN_MAIL}&admin%5Bpassword%5D=${ADMIN_PASS}&locale=en_US&template=simple&reinstall=Installing+Silverstripe..." > /tmp/install_page
-
-token=$(sed -rn '\|"//home/successfullyinstalled| s|.*//home/successfullyinstalled\?flushtoken=([a-f0-9]+)">.*|\1|p' /tmp/install_page)
-
-$CURL ${URL}/InstallerTest/testrewrite
-$CURL ${URL}/home/successfullyinstalled?flushtoken=$token
-
-rm -f /tmp/cookie /tmp/install_page
-rm -f $WEBROOT/install.php
+cd $WEBROOT
+./vendor/bin/sake dev/build
 
 # set site name
 #$MYSQL_BATCH --execute "UPDATE $DB_NAME.SiteConfig SET Title=\"TurnKey SilverStripe\" WHERE ClassName=\"SiteConfig\";"
