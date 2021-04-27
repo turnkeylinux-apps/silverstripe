@@ -14,7 +14,8 @@ VERSION=4.5.2
 
 # unpack and set required permissions
 cd /var/www
-composer create-project silverstripe/installer silverstripe
+chown www-data:www-data -R /var/www
+turnkey-composer create-project silverstripe/installer silverstripe
 
 cp $WEBROOT/.env.example $WEBROOT/.env
 ENV=$WEBROOT/.env
@@ -53,12 +54,8 @@ $MYSQL_BATCH --execute "grant all privileges on $DB_NAME.* to $DB_USER@localhost
 cd $WEBROOT
 ./vendor/bin/sake dev/build
 
-# set site name
-#$MYSQL_BATCH --execute "UPDATE $DB_NAME.SiteConfig SET Title=\"TurnKey SilverStripe\" WHERE ClassName=\"SiteConfig\";"
-#$MYSQL_BATCH --execute "UPDATE $DB_NAME.SiteConfig SET Tagline=NULL WHERE ClassName=\"SiteConfig\";"
-
 # chown sensitive files
-chown -R root:root $WEBROOT
+chown -R root:root "$(dirname "$WEBROOT")"
 chown -R www-data:www-data $WEBROOT/public/assets
 chown www-data:www-data $WEBROOT/public/.htaccess
 chown www-data:www-data $WEBROOT/app/_config.php
