@@ -15,6 +15,9 @@ VERSION=4.5.2
 # unpack and set required permissions
 cd /var/www
 chown www-data:www-data -R /var/www
+turnkey-composer config --global allow-plugins.composer/installers true
+turnkey-composer config --global allow-plugins.silverstripe/recipe-plugin true
+turnkey-composer config --global allow-plugins.silverstripe/vendor-plugin true
 turnkey-composer create-project silverstripe/installer silverstripe
 
 cp $WEBROOT/.env.example $WEBROOT/.env
@@ -27,7 +30,7 @@ echo "SS_DEFAULT_ADMIN_PASSWORD=\"$ADMIN_PASS\"" >> $ENV
 chown -R www-data:www-data $WEBROOT
 
 # tweak php.ini
-PHPINI=/etc/php/7.3/apache2/php.ini
+PHPINI=/etc/php/7.4/apache2/php.ini
 sed -i "s|^memory_limit.*|memory_limit = 128M|" $PHPINI
 sed -i "s|^;date.timezone.*|date.timezone = \"UTC\"|" $PHPINI
 
