@@ -30,7 +30,7 @@ echo "SS_DEFAULT_ADMIN_PASSWORD=\"$ADMIN_PASS\"" >> $ENV
 chown -R www-data:www-data $WEBROOT
 
 # tweak php.ini
-PHPINI=/etc/php/7.4/apache2/php.ini
+PHPINI=/etc/php/8.2/apache2/php.ini
 sed -i "s|^memory_limit.*|memory_limit = 128M|" $PHPINI
 sed -i "s|^;date.timezone.*|date.timezone = \"UTC\"|" $PHPINI
 
@@ -59,15 +59,13 @@ cd $WEBROOT
 
 # chown sensitive files
 chown -R root:root "$(dirname "$WEBROOT")"
+chown www-data:www-data $WEBROOT
 chown -R www-data:www-data $WEBROOT/public/assets
 chown www-data:www-data $WEBROOT/public/.htaccess
-chown www-data:www-data $WEBROOT/app/_config.php
+chown www-data:www-data $WEBROOT/app/_config/*
 chown www-data:www-data $WEBROOT/public/index.php
 chown www-data:www-data $WEBROOT/.env
 chown www-data:www-data $WEBROOT/app/_config/theme.yml
-
-# chmod sensitive files
-chmod 640 $WEBROOT/app/_config.php
 
 # stop services
 service mysql stop

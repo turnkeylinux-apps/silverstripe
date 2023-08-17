@@ -7,5 +7,7 @@ php-curl
 php-mbstring
 php-xml
 php-intl
+php-ctype
+php-tokenizer
 
 python3-bcrypt
