@@ -10,7 +10,7 @@ ADMIN_MAIL=admin@example.com
 SRC=/usr/local/src
 WEBROOT=/var/www/silverstripe
 
-VERSION=4.5.2
+VERSION=5.1.0
 
 # unpack and set required permissions
 cd /var/www
