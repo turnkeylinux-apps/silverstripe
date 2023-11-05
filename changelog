@@ -1,5 +1,9 @@
 turnkey-silverstripe-18.0 (1) turnkey; urgency=low
 
+  * Ensure hashfile includes URL to public key - closes #1864.
+
+  * Include webmin-logviewer module by default - closes #1866.
+
   * Install latest stable SilverStripe from upstream - v5.1.0.
 
   * Install composer from Debian repos (previously installed from source)
