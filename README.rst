@@ -12,11 +12,14 @@ and on top of that:
 
 - SilverStripe configurations:
    
-   - Installed from upstream source code to /var/www/silverstripe
+   - Silverstripe CMS 6 is installed from its pinned official upstream release
+     tag in ``/var/www/silverstripe``.
 
-    **Security note**: Updates to SilverStripe may require supervision so
-    they **ARE NOT** configured to install automatically. See `SilverStripe
-    documentation`_ for upgrading.
+    **Security note**: Silverstripe updates require supervision and are not
+    installed automatically. Run ``silverstripe-update --check`` to inspect
+    the supported Composer patch channel. Back up the site, review the
+    upstream release notes, then run ``silverstripe-update --apply`` in a
+    maintenance window.
 
 - SSL support out of the box.
 - `Adminer`_ administration frontend for MySQL (listening on port
@@ -33,7 +36,7 @@ Credentials *(passwords set at first boot)*
 -  SilverStripe: username is email set on first boot
 
 
-.. _SilverStripe: http://www.silverstripe.org
+.. _SilverStripe: https://www.silverstripe.org
 .. _TurnKey Core: https://www.turnkeylinux.org/core
-.. _SilverStripe documentation: https://docs.silverstripe.org/en/4/upgrading/
-.. _Adminer: http://www.adminer.org/
+.. _SilverStripe documentation: https://docs.silverstripe.org/en/6/upgrading/
+.. _Adminer: https://www.adminer.org/

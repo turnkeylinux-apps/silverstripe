@@ -6,3 +6,7 @@
 [ -e $INITHOOKS_CONF ] && . $INITHOOKS_CONF
 $INITHOOKS_PATH/bin/silverstripe.py --pass="$APP_PASS" --email="$APP_EMAIL"
 
+# The build-only default administrator seeds the database. Remove it after the
+# real firstboot credential has been written so the known password cannot log in.
+sed -i '/^SS_DEFAULT_ADMIN_\(USERNAME\|PASSWORD\)=/d' \
+    /var/www/silverstripe/.env

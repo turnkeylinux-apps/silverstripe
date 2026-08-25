@@ -1,4 +1,4 @@
-#!/bin/sh -ex
+#!/bin/bash -ex
 
 DB_NAME=silverstripe
 DB_USER=silverstripe
@@ -7,18 +7,25 @@ DB_PASS=$(mcookie)
 ADMIN_PASS=turnkey
 ADMIN_MAIL=admin@example.com
 
-SRC=/usr/local/src
 WEBROOT=/var/www/silverstripe
 
-VERSION=5.1.0
+# shellcheck disable=SC1091
+. /usr/local/share/silverstripe-release
 
-# unpack and set required permissions
+# Install the immutable official release tag. Composer then resolves and locks
+# the supported 6.2 patch channel using authenticated package metadata.
 cd /var/www
-chown www-data:www-data -R /var/www
-turnkey-composer config --global allow-plugins.composer/installers true
-turnkey-composer config --global allow-plugins.silverstripe/recipe-plugin true
-turnkey-composer config --global allow-plugins.silverstripe/vendor-plugin true
-turnkey-composer create-project silverstripe/installer silverstripe
+git clone --branch "$SILVERSTRIPE_VERSION" --single-branch --depth=1 \
+    "$SILVERSTRIPE_SOURCE" "$WEBROOT"
+test "$(git -C "$WEBROOT" rev-parse HEAD)" = "$SILVERSTRIPE_COMMIT"
+test "$(git -C "$WEBROOT" rev-parse "$SILVERSTRIPE_VERSION^{tag}")" = \
+    "$SILVERSTRIPE_TAG_OBJECT"
+test "$(git -C "$WEBROOT" rev-parse "$SILVERSTRIPE_VERSION^{commit}")" = \
+    "$SILVERSTRIPE_COMMIT"
+chown -R www-data:www-data "$WEBROOT"
+COMPOSER_MEMORY_LIMIT=-1 APP_ROOT="$WEBROOT" \
+    turnkey-composer install --no-dev --no-interaction --prefer-dist \
+    --no-progress
 
 cp $WEBROOT/.env.example $WEBROOT/.env
 ENV=$WEBROOT/.env
@@ -27,15 +34,16 @@ sed -i "s/^\(SS_DATABASE_PASSWORD=\).*$/\1\"$DB_PASS\"/" $ENV
 sed -i "s/^\(SS_DATABASE_NAME=\).*$/\1\"$DB_NAME\"/" $ENV
 echo "SS_DEFAULT_ADMIN_USERNAME=\"admin\"" >> $ENV
 echo "SS_DEFAULT_ADMIN_PASSWORD=\"$ADMIN_PASS\"" >> $ENV
+sed -i 's/^SS_ENVIRONMENT_TYPE=.*/SS_ENVIRONMENT_TYPE="live"/' "$ENV"
 chown -R www-data:www-data $WEBROOT
 
 # tweak php.ini
-PHPINI=/etc/php/8.2/apache2/php.ini
+PHPINI=/etc/php/8.4/apache2/php.ini
 sed -i "s|^memory_limit.*|memory_limit = 128M|" $PHPINI
 sed -i "s|^;date.timezone.*|date.timezone = \"UTC\"|" $PHPINI
 
 # tweak footer
-CONF=$WEBROOT/themes/simple/templates/Includes/Footer.ss
+CONF=$WEBROOT/themes/startup-theme/templates/Includes/Footer.ss
 sed -i "s|</footer>|<center><a href='https://www.turnkeylinux.org/silverstripe'>SilverStripe Appliance</a> - Powered by <a href='https://www.turnkeylinux.org'>TurnKey Linux</a></center></footer>|" $CONF
 
 # configure apache
@@ -48,24 +56,20 @@ service mysql start
 service apache2 start
 
 # setup the database
-MYSQL_BATCH="mysql --user=root --password=$MYSQL_PASS --batch"
-MYSQL_ADMIN="mysqladmin --user=root --password=$MYSQL_PASS"
-
-$MYSQL_ADMIN create $DB_NAME
-$MYSQL_BATCH --execute "grant all privileges on $DB_NAME.* to $DB_USER@localhost identified by '$DB_PASS'; flush privileges;"
+mariadb --user=root --password="$MYSQL_PASS" --batch --execute \
+    "CREATE DATABASE $DB_NAME CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mariadb --user=root --password="$MYSQL_PASS" --batch --execute \
+    "CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASS'; GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost'; FLUSH PRIVILEGES;"
 
 cd $WEBROOT
-./vendor/bin/sake dev/build
+runuser -u www-data -- php vendor/bin/sake db:build --flush --no-interaction
 
-# chown sensitive files
-chown -R root:root "$(dirname "$WEBROOT")"
-chown www-data:www-data $WEBROOT
+# Keep application code read-only to the web service. Silverstripe writes
+# instance state only through its environment file, caches and asset store.
+chown -R root:root "$WEBROOT"
 chown -R www-data:www-data $WEBROOT/public/assets
-chown www-data:www-data $WEBROOT/public/.htaccess
-chown www-data:www-data $WEBROOT/app/_config/*
-chown www-data:www-data $WEBROOT/public/index.php
 chown www-data:www-data $WEBROOT/.env
-chown www-data:www-data $WEBROOT/app/_config/theme.yml
+chmod 0640 "$WEBROOT/.env"
 
 # stop services
 service mysql stop
