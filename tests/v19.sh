@@ -68,11 +68,28 @@ for module in curl dom gd intl mbstring mysqli pdo_mysql simplexml tokenizer \
     php -m | grep -Fxiq "$module"
 done
 composer_command check-platform-reqs --no-dev >/dev/null
-composer_command validate --no-check-publish --no-interaction >/dev/null
-stat -c '%U:%G %a' "$webroot/.env" | grep -Fxq 'www-data:www-data 640'
-stat -c '%U:%G' "$webroot/public/assets" | grep -Fxq 'www-data:www-data'
-! grep -q '^SS_DEFAULT_ADMIN_' "$webroot/.env"
-grep -Fxq 'SS_ENVIRONMENT_TYPE="live"' "$webroot/.env"
+if ! composer_command validate --no-check-publish --no-interaction; then
+    echo 'Composer project validation failed' >&2
+    exit 1
+fi
+env_state=$(stat -c '%U:%G %a' "$webroot/.env")
+test "$env_state" = 'www-data:www-data 640' || {
+    echo "unexpected .env ownership or mode: $env_state" >&2
+    exit 1
+}
+assets_owner=$(stat -c '%U:%G' "$webroot/public/assets")
+test "$assets_owner" = 'www-data:www-data' || {
+    echo "unexpected assets owner: $assets_owner" >&2
+    exit 1
+}
+if grep -q '^SS_DEFAULT_ADMIN_' "$webroot/.env"; then
+    echo 'build-only default administrator remains in .env' >&2
+    exit 1
+fi
+if ! grep -Fxq 'SS_ENVIRONMENT_TYPE="live"' "$webroot/.env"; then
+    echo 'live environment setting is absent from .env' >&2
+    exit 1
+fi
 
 curl --insecure --fail --silent --show-error --location \
     --cookie-jar "$cookie" "$base/admin/" >"$page"
