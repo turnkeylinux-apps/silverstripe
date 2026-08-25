@@ -26,6 +26,12 @@ chown -R www-data:www-data "$WEBROOT"
 COMPOSER_MEMORY_LIMIT=-1 APP_ROOT="$WEBROOT" \
     turnkey-composer install --no-dev --no-interaction --prefer-dist \
     --no-progress
+# Silverstripe's recipe plugin installs project files after Composer first
+# writes the lock. Refresh only its content hash so the installed lock matches
+# the final project definition without changing the resolved package set.
+COMPOSER_MEMORY_LIMIT=-1 APP_ROOT="$WEBROOT" \
+    turnkey-composer update --lock --no-install --no-dev --no-interaction \
+    --no-progress
 
 cp $WEBROOT/.env.example $WEBROOT/.env
 ENV=$WEBROOT/.env

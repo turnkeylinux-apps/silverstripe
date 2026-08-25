@@ -22,8 +22,14 @@ cleanup() {
 }
 trap cleanup EXIT
 
+composer_command() {
+    GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory \
+        GIT_CONFIG_VALUE_0="$webroot" APP_ROOT="$webroot" \
+        turnkey-composer "$@"
+}
+
 composer_version() {
-    APP_ROOT="$webroot" turnkey-composer show "$1" --format=json |
+    composer_command show "$1" --format=json |
         php -r '$data = json_decode(stream_get_contents(STDIN), true, flags: JSON_THROW_ON_ERROR); echo $data["versions"][0];'
 }
 
@@ -61,9 +67,8 @@ for module in curl dom gd intl mbstring mysqli pdo_mysql simplexml tokenizer \
     xml zip; do
     php -m | grep -Fxiq "$module"
 done
-APP_ROOT="$webroot" turnkey-composer check-platform-reqs --no-dev >/dev/null
-APP_ROOT="$webroot" turnkey-composer validate --no-check-publish \
-    --no-interaction >/dev/null
+composer_command check-platform-reqs --no-dev >/dev/null
+composer_command validate --no-check-publish --no-interaction >/dev/null
 stat -c '%U:%G %a' "$webroot/.env" | grep -Fxq 'www-data:www-data 640'
 stat -c '%U:%G' "$webroot/public/assets" | grep -Fxq 'www-data:www-data'
 ! grep -q '^SS_DEFAULT_ADMIN_' "$webroot/.env"
