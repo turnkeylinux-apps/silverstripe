@@ -107,7 +107,7 @@ curl --insecure --silent --show-error \
     --dump-header "$headers" --output "$page" \
     "$base/Security/login/default/LoginForm"
 grep -q '^HTTP/.* 302' "$headers"
-grep -Eqi '^location: .*/admin/pages\r$' "$headers"
+tr -d '\r' <"$headers" | grep -Eqi '^location: .*/admin/pages$'
 curl --insecure --fail --silent --show-error --location \
     --cookie "$cookie" "$base/admin/pages" >"$page"
 grep -qi 'Pages' "$page"
