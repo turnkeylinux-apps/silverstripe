@@ -1,0 +1,53 @@
+#!/bin/bash
+set -Eeuo pipefail
+
+WEBROOT=/var/www/silverstripe
+export GIT_CONFIG_COUNT=1
+export GIT_CONFIG_KEY_0=safe.directory
+export GIT_CONFIG_VALUE_0=$WEBROOT
+
+usage() {
+    echo "Usage: $(basename "$0") --check|--apply" >&2
+    exit 1
+}
+
+secure_tree() {
+    chown -R root:root "$WEBROOT"
+    chown -R www-data:www-data "$WEBROOT/public/assets"
+    chown www-data:www-data "$WEBROOT/.env"
+    chmod 0640 "$WEBROOT/.env"
+}
+
+check_update() {
+    cd "$WEBROOT"
+    APP_ROOT="$WEBROOT" COMPOSER_MEMORY_LIMIT=-1 \
+        turnkey-composer update --dry-run --no-dev --no-interaction \
+        --with-all-dependencies --no-progress
+}
+
+apply_update() {
+    systemctl stop apache2.service
+    trap 'secure_tree; systemctl start apache2.service' EXIT
+    chown -R www-data:www-data "$WEBROOT"
+    cd "$WEBROOT"
+    APP_ROOT="$WEBROOT" COMPOSER_MEMORY_LIMIT=-1 \
+        turnkey-composer update --no-dev --no-interaction \
+        --with-all-dependencies --prefer-dist --no-progress
+    runuser -u www-data -- php vendor/bin/sake db:build --flush \
+        --no-interaction
+    secure_tree
+    systemctl start apache2.service
+    trap - EXIT
+}
+
+case ${1:-} in
+    --check)
+        check_update
+        ;;
+    --apply)
+        apply_update
+        ;;
+    *)
+        usage
+        ;;
+esac

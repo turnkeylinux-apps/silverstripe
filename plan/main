@@ -9,5 +9,7 @@ php-xml
 php-intl
 php-ctype
 php-tokenizer
+php-zip
 
-python3-bcrypt
+git
+unzip

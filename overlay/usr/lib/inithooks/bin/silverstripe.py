@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Set SilverStripe admin password and email
+"""Set Silverstripe CMS administrator password and email
 
 Option:
     --pass=     unless provided, will ask interactively
@@ -7,14 +7,14 @@ Option:
 
 """
 
-import os
-import sys
 import getopt
-from libinithooks import inithooks_cache
-import bcrypt
+import json
+import subprocess
+import sys
 
+from libinithooks import inithooks_cache
 from libinithooks.dialog_wrapper import Dialog
-from mysqlconf import MySQL
+
 
 def usage(s=None):
     if s:
@@ -25,8 +25,8 @@ def usage(s=None):
 
 def main():
     try:
-        opts, args = getopt.gnu_getopt(sys.argv[1:], "h",
-                                       ['help', 'pass=', 'email='])
+        opts, _args = getopt.gnu_getopt(sys.argv[1:], "h",
+                                        ['help', 'pass=', 'email='])
     except getopt.GetoptError as e:
         usage(e)
 
@@ -55,25 +55,17 @@ def main():
             "Enter email address for the SilverStripe 'admin' account.",
             "admin@example.com")
 
+    subprocess.run(
+        [
+            'runuser', '-u', 'www-data', '--', 'php',
+            '/usr/lib/inithooks/bin/silverstripe-admin.php',
+        ],
+        input=json.dumps({'email': email, 'password': password}),
+        text=True,
+        check=True,
+    )
     inithooks_cache.write('APP_EMAIL', email)
-
-    salt = bcrypt.gensalt(10)
-    hash = bcrypt.hashpw(password.encode('utf8'), salt)
-
-    # munge the salt and hash, argh!
-    _salt = salt[4:]
-    _hash = b"$2y$" + hash[4:]
-
-    m = MySQL()
-    m.execute('UPDATE silverstripe.Member SET Salt=%s WHERE ID=1;', (_salt,))
-    m.execute('UPDATE silverstripe.Member SET Password=%s WHERE ID=1;', (_hash,))
-    m.execute('UPDATE silverstripe.Member SET Email=%s WHERE ID=1;', (email,))
-    m.execute('UPDATE silverstripe.Member SET PasswordEncryption="blowfish" WHERE ID=1;')
-
-    m.execute('UPDATE silverstripe.MemberPassword SET Salt=%s WHERE ID=1;', (_salt,))
-    m.execute('UPDATE silverstripe.MemberPassword SET Password=%s WHERE ID=1;', (_hash,))
 
 
 if __name__ == "__main__":
     main()
-
